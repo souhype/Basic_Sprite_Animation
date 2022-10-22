@@ -10,14 +10,17 @@ class Sprite {
         this.image.src = this.animations[this.state].imageSrc;
         this.image.width /= this.animations[this.state].max;
         this.scaleFactor = parameter.scaleFactor || 1;
+        this.frames = {
+            counter: 0,
+            hold: 5,
+        };
     }
     animate() {
         this.image.src = this.animations[this.state].imageSrc;
 
         this.animations[this.state].current =
-            Math.floor(this.animations[this.state].counter / this.animations[this.state].max) %
-            this.animations[this.state].max;
-        this.animations[this.state].counter++;
+            Math.floor(this.frames.counter / this.frames.hold) % this.animations[this.state].max;
+        this.frames.counter++;
     }
     draw(context) {
         context.drawImage(
@@ -33,8 +36,8 @@ class Sprite {
         );
     }
     update(context) {
-        this.animate();
         this.draw(context);
+        this.animate();
     }
 }
 class Entity extends Sprite {
@@ -48,6 +51,7 @@ class Entity extends Sprite {
             d: false,
             a: false,
             w: false,
+            space: false,
         };
         this.friction = 0.9;
         this.hitbox = parameter.hitbox || {
@@ -58,16 +62,14 @@ class Entity extends Sprite {
         };
     }
     collision(width, height) {
-        this.onGround = false;
-
-        if (this.position.x + this.hitbox.x < 0) this.position.x = -this.hitbox.x;
+        if (this.position.x + this.hitbox.x <= 0) this.position.x = -this.hitbox.x;
         if (this.position.x + this.hitbox.x + this.hitbox.width > width)
             this.position.x = width - this.hitbox.x - this.hitbox.width;
 
-        if (this.position.y + this.hitbox.y + this.hitbox.height > height) {
+        if (this.position.y + this.hitbox.y + this.hitbox.height >= height) {
             this.position.y = height - this.hitbox.y - this.hitbox.height;
             this.onGround = true;
-        }
+        } else this.onGround = false;
     }
     movement() {
         this.position.x += this.velocity.x *= this.friction;
@@ -83,16 +85,16 @@ class Entity extends Sprite {
         if (!(this.keyPressed.d || this.keyPressed.a)) this.velocity.x *= this.friction * 0.1;
     }
     stateManager() {
-        this.state = 'idle';
         if (this.onGround) {
+            this.state = 'idle';
+            if (this.keyPressed.space) this.state = 'attack';
             if (this.velocity.x > this.friction || this.velocity.x < -this.friction) {
                 this.state = 'run';
-                console.log('runnin');
             }
         }
         if (!this.onGround) {
             if (this.velocity.y < 0) this.state = 'jump';
-            else this.state = 'fall';
+            if (this.velocity.y > 0) this.state = 'fall';
         }
     }
     input() {
@@ -100,27 +102,29 @@ class Entity extends Sprite {
             if (event.key === 'w') this.keyPressed.w = true;
             if (event.key === 'd') this.keyPressed.d = true;
             if (event.key === 'a') this.keyPressed.a = true;
+            if (event.key === ' ') this.keyPressed.space = true;
         };
         onkeyup = event => {
             if (event.key === 'w') this.keyPressed.w = false;
             if (event.key === 'd') this.keyPressed.d = false;
             if (event.key === 'a') this.keyPressed.a = false;
+            if (event.key === ' ') this.keyPressed.space = false;
         };
     }
-    drawHitbox(context) {
-        context.fillStyle = 'hsl(0 0% 100%/0.1)';
-        context.fillRect(
-            this.position.x + this.hitbox.x,
-            this.position.y + this.hitbox.y,
-            this.hitbox.width,
-            this.hitbox.height
-        );
-    }
+    // drawHitbox(context) {
+    //     context.fillStyle = 'hsl(0 0% 100%/0.1)';
+    //     context.fillRect(
+    //         this.position.x + this.hitbox.x,
+    //         this.position.y + this.hitbox.y,
+    //         this.hitbox.width,
+    //         this.hitbox.height
+    //     );
+    // }
     update(context, width, height) {
-        this.drawHitbox(context);
-        this.stateManager();
+        // this.drawHitbox(context);
         this.input();
         this.movement();
+        this.stateManager();
         this.collision(width, height);
         super.update(context);
     }
@@ -145,26 +149,27 @@ class Game {
                 idle: {
                     imageSrc: 'idle.png',
                     current: 0,
-                    counter: 0,
                     max: 6,
                 },
                 run: {
                     imageSrc: 'run.png',
                     current: 0,
-                    counter: 0,
                     max: 8,
                 },
                 fall: {
                     imageSrc: 'fall.png',
                     current: 0,
-                    counter: 0,
                     max: 3,
                 },
                 jump: {
                     imageSrc: 'jump.png',
                     current: 0,
-                    counter: 0,
                     max: 3,
+                },
+                attack: {
+                    imageSrc: 'attack.png',
+                    current: 0,
+                    max: 12,
                 },
             },
         });
