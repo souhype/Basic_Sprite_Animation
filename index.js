@@ -88,9 +88,8 @@ class Entity extends Sprite {
         if (this.onGround) {
             this.state = 'idle';
             if (this.keyPressed.space) this.state = 'attack';
-            if (this.velocity.x > this.friction || this.velocity.x < -this.friction) {
-                this.state = 'run';
-            }
+            if (this.velocity.x > this.friction) this.state = 'run';
+            if (this.velocity.x < -this.friction) this.state = 'runLeft';
         }
         if (!this.onGround) {
             if (this.velocity.y < 0) this.state = 'jump';
@@ -153,6 +152,11 @@ class Game {
                 },
                 run: {
                     imageSrc: 'run.png',
+                    current: 0,
+                    max: 8,
+                },
+                runLeft: {
+                    imageSrc: 'runLeft.png',
                     current: 0,
                     max: 8,
                 },
