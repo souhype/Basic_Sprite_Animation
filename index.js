@@ -75,7 +75,7 @@ class Entity extends Sprite {
 
         if (!this.onGround) this.velocity.y += this.friction;
 
-        if (this.keyPressed.w && this.onGround) this.velocity.y -= this.friction * 40;
+        if (this.keyPressed.w && this.onGround) this.velocity.y -= this.friction * 20;
 
         if (this.keyPressed.d) this.velocity.x += this.friction;
         if (this.keyPressed.a) this.velocity.x -= this.friction;
