@@ -9,6 +9,7 @@ class Sprite {
         this.state = Object.keys(this.animations)[0];
         this.image.src = this.animations[this.state].imageSrc;
         this.image.width /= this.animations[this.state].max;
+        this.scaleFactor = parameter.scaleFactor || 1;
     }
     animate() {
         this.image.src = this.animations[this.state].imageSrc;
@@ -27,8 +28,8 @@ class Sprite {
             this.image.height,
             this.position.x,
             this.position.y,
-            this.image.width,
-            this.image.height
+            this.image.width * this.scaleFactor,
+            this.image.height * this.scaleFactor
         );
     }
     update(context) {
@@ -54,8 +55,10 @@ class Entity extends Sprite {
     movement() {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+
         this.velocity.x *= this.friction;
         this.velocity.y *= this.friction;
+
         if (this.keyPressed.d) this.velocity.x += this.speed;
         if (this.keyPressed.a) this.velocity.x -= this.speed;
     }
@@ -66,12 +69,8 @@ class Entity extends Sprite {
 
     input() {
         onkeydown = event => {
-            if (event.key === 'd') {
-                this.keyPressed.d = true;
-            }
-            if (event.key === 'a') {
-                this.keyPressed.a = true;
-            }
+            if (event.key === 'd') this.keyPressed.d = true;
+            if (event.key === 'a') this.keyPressed.a = true;
         };
         onkeyup = event => {
             this.velocity.x *= this.speed;
@@ -94,6 +93,7 @@ class Game {
         this.context.canvas.height = 450;
 
         this.player = new Entity({
+            scaleFactor: 2,
             animations: {
                 idle: {
                     imageSrc: 'idle.png',
@@ -112,7 +112,7 @@ class Game {
     }
 
     run = () => {
-        this.context.clearRect(0, 0, 900, 450);
+        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
         this.player.update(this.context);
         requestAnimationFrame(this.run);
     };
