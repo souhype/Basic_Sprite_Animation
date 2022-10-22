@@ -1,0 +1,6 @@
+body {
+    background: hsl(0 0% 0%);
+}
+canvas {
+    border: solid 1px white;
+}
