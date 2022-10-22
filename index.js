@@ -141,12 +141,12 @@ class Game {
 
         this.player = new Entity({
             height: this.context.canvas.height,
-            scaleFactor: 2,
+            scaleFactor: 5,
             hitbox: {
-                width: 30,
-                height: 70,
-                x: 40,
-                y: 20,
+                width: 100,
+                height: 220,
+                x: 80,
+                y: 0,
             },
             animations: {
                 idle: {
@@ -191,5 +191,3 @@ class Game {
 
 const game = new Game();
 game.run();
-
-// white got removed transparency need to redo all imgs sad :/
