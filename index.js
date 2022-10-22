@@ -49,12 +49,19 @@ class Entity extends Sprite {
             a: false,
         };
 
-        this.friction = 0.95;
+        this.friction = 0.99;
         this.speed = 0.1;
+        this.hitbox = parameter.hitbox || {
+            width: 0,
+            height: 0,
+            x: 0,
+            y: 0,
+        };
     }
     movement() {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+        console.log(this.velocity.x);
 
         this.velocity.x *= this.friction;
         this.velocity.y *= this.friction;
@@ -79,6 +86,13 @@ class Entity extends Sprite {
         };
     }
     update(context) {
+        // context.fillStyle = 'hsl(0 50% 50%/1)';
+        // context.fillRect(
+        //     this.position.x + this.hitbox.x,
+        //     this.position.y + this.hitbox.y,
+        //     this.hitbox.width,
+        //     this.hitbox.height
+        // );
         super.update(context);
         this.stateManager();
         this.input();
@@ -93,6 +107,12 @@ class Game {
         this.context.canvas.height = 450;
 
         this.player = new Entity({
+            hitbox: {
+                width: 40,
+                height: 70,
+                x: 30,
+                y: 17,
+            },
             scaleFactor: 2,
             animations: {
                 idle: {
@@ -112,7 +132,8 @@ class Game {
     }
 
     run = () => {
-        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+        this.context.fillStyle = 'hsl(0 0% 0%/0.6)';
+        this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
         this.player.update(this.context);
         requestAnimationFrame(this.run);
     };
