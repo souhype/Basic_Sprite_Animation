@@ -53,7 +53,8 @@ class Entity extends Sprite {
             w: false,
             space: false,
         };
-        this.friction = 0.9;
+        this.jumpCount = 0;
+        this.force = 0.9;
         this.hitbox = parameter.hitbox || {
             width: 0,
             height: 0,
@@ -69,27 +70,26 @@ class Entity extends Sprite {
         if (this.position.y + this.hitbox.y + this.hitbox.height >= height) {
             this.position.y = height - this.hitbox.y - this.hitbox.height;
             this.onGround = true;
+            this.jumpCount = 0;
         } else this.onGround = false;
     }
     movement() {
-        this.position.x += this.velocity.x *= this.friction;
-        this.position.y += this.velocity.y *= this.friction;
+        this.position.x += this.velocity.x *= this.force;
+        this.position.y += this.velocity.y *= this.force;
 
-        if (!this.onGround) this.velocity.y += this.friction;
+        if (!this.onGround) this.velocity.y += this.force;
 
-        if (this.keyPressed.w && this.onGround) this.velocity.y -= this.friction * 20;
+        if (this.keyPressed.d) this.velocity.x += this.force;
+        if (this.keyPressed.a) this.velocity.x -= this.force;
 
-        if (this.keyPressed.d) this.velocity.x += this.friction;
-        if (this.keyPressed.a) this.velocity.x -= this.friction;
-
-        if (!(this.keyPressed.d || this.keyPressed.a)) this.velocity.x *= this.friction * 0.1;
+        if (!(this.keyPressed.d || this.keyPressed.a)) this.velocity.x *= this.force * 0.1;
     }
     stateManager() {
         if (this.onGround) {
             this.state = 'idle';
             if (this.keyPressed.space) this.state = 'attack';
-            if (this.velocity.x > this.friction) this.state = 'run';
-            if (this.velocity.x < -this.friction) this.state = 'runLeft';
+            if (this.velocity.x > this.force) this.state = 'run';
+            if (this.velocity.x < -this.force) this.state = 'runLeft';
         }
         if (!this.onGround) {
             if (this.velocity.y < 0) this.state = 'jump';
@@ -98,10 +98,14 @@ class Entity extends Sprite {
     }
     input() {
         onkeydown = event => {
-            if (event.key === 'w') this.keyPressed.w = true;
+            if (event.key === ' ') this.keyPressed.space = true;
             if (event.key === 'd') this.keyPressed.d = true;
             if (event.key === 'a') this.keyPressed.a = true;
-            if (event.key === ' ') this.keyPressed.space = true;
+            if (event.key === 'w' && !this.keyPressed.w && this.jumpCount < 2) {
+                this.velocity.y -= this.force * 40;
+                this.jumpCount++;
+                this.keyPressed.w = true;
+            }
         };
         onkeyup = event => {
             if (event.key === 'w') this.keyPressed.w = false;
@@ -110,38 +114,38 @@ class Entity extends Sprite {
             if (event.key === ' ') this.keyPressed.space = false;
         };
     }
-    // drawHitbox(context) {
-    //     context.fillStyle = 'hsl(0 0% 100%/0.1)';
-    //     context.fillRect(
-    //         this.position.x + this.hitbox.x,
-    //         this.position.y + this.hitbox.y,
-    //         this.hitbox.width,
-    //         this.hitbox.height
-    //     );
-    // }
+    drawHitbox(context) {
+        context.fillStyle = 'hsl(0 0% 100%)';
+        context.fillRect(
+            this.position.x + this.hitbox.x,
+            this.position.y + this.hitbox.y,
+            this.hitbox.width,
+            this.hitbox.height
+        );
+    }
     update(context, width, height) {
         // this.drawHitbox(context);
-        this.input();
+        super.update(context);
         this.movement();
+        this.input();
         this.stateManager();
         this.collision(width, height);
-        super.update(context);
     }
 }
 class Game {
     constructor() {
         this.context = document.querySelector('canvas').getContext('2d');
 
-        this.context.canvas.width = 900;
-        this.context.canvas.height = 450;
+        this.context.canvas.width = innerWidth * 0.95;
+        this.context.canvas.height = innerHeight * 0.95;
 
         this.player = new Entity({
             height: this.context.canvas.height,
             scaleFactor: 2,
             hitbox: {
-                width: 40,
+                width: 30,
                 height: 70,
-                x: 30,
+                x: 40,
                 y: 20,
             },
             animations: {
@@ -187,3 +191,5 @@ class Game {
 
 const game = new Game();
 game.run();
+
+// white got removed transparency need to redo all imgs sad :/
