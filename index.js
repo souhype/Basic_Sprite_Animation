@@ -73,16 +73,23 @@ class Entity extends Sprite {
             this.jumpCount = 0;
         } else this.onGround = false;
     }
-    movement() {
-        this.position.x += this.velocity.x *= this.force;
-        this.position.y += this.velocity.y *= this.force;
+    horizontalMovement() {
+        this.position.x += this.velocity.x *= this.force; // Friction
 
-        if (!this.onGround) this.velocity.y += this.force;
+        if (this.keyPressed.d) this.velocity.x += this.force * 2; // Movespeed
+        if (this.keyPressed.a) this.velocity.x -= this.force * 2; // Movespeed
 
-        if (this.keyPressed.d) this.velocity.x += this.force;
-        if (this.keyPressed.a) this.velocity.x -= this.force;
+        if (!(this.keyPressed.d || this.keyPressed.a)) this.velocity.x *= this.force * 0.5; // Friction
+    }
+    verticalMovement() {
+        this.position.y += this.velocity.y *= this.force; // Friction
 
-        if (!(this.keyPressed.d || this.keyPressed.a)) this.velocity.x *= this.force * 0.1;
+        if (!this.onGround) this.velocity.y += this.force * 2; // Gravity
+    }
+    jump() {
+        this.velocity.y -= this.force * 60;
+        this.jumpCount++;
+        this.keyPressed.w = true;
     }
     stateManager() {
         if (this.onGround) {
@@ -97,17 +104,13 @@ class Entity extends Sprite {
         }
     }
     input() {
-        onkeydown = event => {
+        onkeydown = (event) => {
             if (event.key === ' ') this.keyPressed.space = true;
             if (event.key === 'd') this.keyPressed.d = true;
             if (event.key === 'a') this.keyPressed.a = true;
-            if (event.key === 'w' && !this.keyPressed.w && this.jumpCount < 2) {
-                this.velocity.y -= this.force * 40;
-                this.jumpCount++;
-                this.keyPressed.w = true;
-            }
+            if (event.key === 'w' && !this.keyPressed.w && this.jumpCount < 2) this.jump();
         };
-        onkeyup = event => {
+        onkeyup = (event) => {
             if (event.key === 'w') this.keyPressed.w = false;
             if (event.key === 'd') this.keyPressed.d = false;
             if (event.key === 'a') this.keyPressed.a = false;
@@ -126,8 +129,9 @@ class Entity extends Sprite {
     update(context, width, height) {
         // this.drawHitbox(context);
         super.update(context);
-        this.movement();
         this.input();
+        this.horizontalMovement();
+        this.verticalMovement();
         this.stateManager();
         this.collision(width, height);
     }
@@ -136,8 +140,8 @@ class Game {
     constructor() {
         this.context = document.querySelector('canvas').getContext('2d');
 
-        this.context.canvas.width = innerWidth * 0.95;
-        this.context.canvas.height = innerHeight * 0.95;
+        this.context.canvas.width = this.width = innerWidth * 0.95;
+        this.context.canvas.height = this.height = innerHeight * 0.95;
 
         this.player = new Entity({
             height: this.context.canvas.height,
@@ -183,8 +187,8 @@ class Game {
         });
     }
     run = () => {
-        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-        this.player.update(this.context, this.context.canvas.width, this.context.canvas.height);
+        this.context.clearRect(0, 0, this.width, this.height);
+        this.player.update(this.context, this.width, this.height);
         requestAnimationFrame(this.run);
     };
 }
