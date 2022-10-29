@@ -193,5 +193,9 @@ class Game {
     };
 }
 
-const game = new Game();
-game.run();
+addEventListener('DOMContentLoaded', () => {
+    const game = new Game();
+    game.run();
+    });
+
+
